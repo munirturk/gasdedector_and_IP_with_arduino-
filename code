@@ -1,0 +1,65 @@
+#include <ESP8266WiFi.h>
+
+
+const char* ssid = "Brainteam2.4G";
+const char* password = "beyingucu2021+";
+
+WiFiServer server(80);
+
+int gasA0 = A0;
+int threshold = 700; 
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(gasA0, INPUT);
+ 
+WiFi.begin(ssid, password);
+ 
+while (WiFi.status() != WL_CONNECTED) {
+delay(500);
+Serial.print(".");
+}
+Serial.println("");
+Serial.println("WiFi connected");
+ 
+// server baslatılıyor
+
+server.begin(); 
+Serial.println("Server started");
+Serial.print(WiFi.localIP());
+
+ 
+}
+
+void loop() {
+
+  int analogSensor = analogRead(gasA0);  
+  delay(500);
+  Serial.println(analogSensor);
+
+  WiFiClient client = server.available();
+
+  if (!client) {
+     
+  return;
+    }   
+
+  // client ın bir data gondermesini bekliyoruz
+  Serial.println("new client");
+  while(!client.available()){
+  delay(1);
+    }
+  
+   if (analogSensor > threshold)
+  {
+   client.print("GAZ KACAGI VAR. NOT: SIGARA DUMANINDAN ETKILENIR. ");
+  }
+  else    
+  {
+    client.println("GAZ KACAGI YOK. ");
+  }
+ delay(10000);
+   client.print("Olcum Degeri:");
+  client.println(analogSensor);
+
+}
